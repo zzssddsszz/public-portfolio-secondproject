@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/micro?serverTimezone=UTC&characterEncoding=UTF-8
     username: root
-    password: 87swanson@
+    password: 
     driver-class-name: com.mysql.cj.jdbc.Driver
 #    driver-class-name: jdbc:mysql://localhost:3306/micro
   jpa:

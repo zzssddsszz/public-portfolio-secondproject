@@ -6,7 +6,7 @@ spring:
 #    url: jdbc:mysql://localhost:3306/micro?serverTimezone=UTC&characterEncoding=UTF-8
     url: jdbc:mysql://localhost:3306/micro
     username: root
-    password: 87swanson@
+    password: 
 #    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true

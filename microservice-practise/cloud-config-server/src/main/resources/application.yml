@@ -7,8 +7,6 @@ spring:
         git:
           uri: https://github.com/jaesuk95/cloud-config-server
 
-          #      username: jaesuk95
-          #      password: 87swanson@
 
 server:
   port: 9196

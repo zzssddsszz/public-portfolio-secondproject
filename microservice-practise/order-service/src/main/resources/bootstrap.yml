@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      uri:
+        - http://localhost:9196
+#      username: jaesuk95
+#      password: 87swanson@

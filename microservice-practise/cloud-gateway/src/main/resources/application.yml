@@ -1,0 +1,188 @@
+server:
+  port: 8989
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: reactive
+
+  application:
+    name: GATEWAY_SERVER
+  cloud:
+    gateway:
+      default-filters:
+        - TokenRelay
+      discovery:
+        locator:
+          enabled: true
+          # this option will allow the name of the microservices as they are registered in the Eureka Service Discovery
+
+      routes:
+        - id: order-service
+          uri: lb://ORDER-SERVICE             # With the prefix "lb" will use the Spring Cloud Netflix
+          predicates:                         # Specify the conditions which make the request use this route
+            - Path=/order/**
+          filters:
+#            - AuthFilter
+            - name: CircuitBreaker
+              args:
+                name: order-service
+                fallbackuri: forward:/orderFallBack
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/payment/**
+          filters:
+            - TokenRelay
+            - name: CircuitBreaker
+              args:
+                name: payment-service
+                fallbackuri: forward:/paymentFallBack
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user/**, /home
+          filters:
+            - RemoveRequestHeader= Cookie,Set-Cookie
+#            - TokenRelay
+            - name: CircuitBreaker
+              args:
+                name: user-service
+#                fallbackuri: forward:/paymentFallBack
+#          lb = load balancer
+
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/auth/realms/Alphabet
+      client:
+        provider:
+          keycloak:
+            issuerUri: http://localhost:8080/auth/realms/Alphabet
+            userNameAttribute: preferred_username
+            tokenUri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/token
+            authorizationUri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/auth
+            userInfoUri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/userinfo
+        registration:
+          keycloak-gateway:
+            provider: keycloak
+            clientId: springboot-keytest
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
+#            authorizationGrantType: authorization-code
+#            redirectUri: "http://localhost:8989/login/oauth2/code/keycloak"
+#            redirectUri: "{baseUrl}/login/oauth2/code/keycloak"
+
+#
+#keycloak:
+#  realm: Alphabet
+#  auth-server-url: http://localhost:8080/auth
+#  resource: springboot-keytest
+#  public-client: true
+#  principal-attribute: preferred_username
+#  security-constraints[0]:
+#    authRoles[0]: user
+#    securityCollections[0]:
+#      patterns[0]: /user/*
+
+
+#            redirectUri: "{baseUrl}/login/oauth2/code/keycloak"
+#      client:
+#        # provider for Oauth2 client
+#        provider:
+#          # custom name = keycloak
+#          my-keycloak:
+#            issuerUri: http://localhost:8080/auth/realms/Alphabet
+#            token-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/token
+#            authorization-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/auth
+#            userinfo-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/userinfo
+#            user-name-attribute: preferred_username
+        # create the client itself
+#        registration:
+#          keycloak:
+#            provider: my-keycloak
+#            clientId: springboot-keytest
+#            authorizationGrantType: authorization_code
+#            redirectUri: "{baseUrl}/login/oauth2/code/keycloak"
+
+# Enable these to debug the Authorization flow
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        security:
+#          web: DEBUG
+
+#          keycloak:
+#            token-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/token
+#            authorization-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/auth
+#            userinfo-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/userinfo
+#            user-name-attribute: preferred_username
+
+#  security:
+#    oauth2:
+#      client:
+#        provider:
+#          my-keycloak-provider:
+#            issuer-uri: http://localhost:8080/auth/realms/My-Realm
+#        registration:
+#          keycloak-spring-gateway-client:
+#            provider: my-keycloak-provider
+#            client-id: spring-gateway-application
+#            client-secret: 00378775-c7c6-47c8-bb69-8f9358aebe68
+#            authorization-grant-type: authorization_code
+#            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
+##          jwk-set-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/certs
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+
+#Hystrix Configuration
+hystrix:
+  dashboard:
+    proxy-stream-allow-list: "*"
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+#
+#microservice:
+#  payment-service:
+#    endpoints:
+#      endpoint:
+#        uri: http://PAYMENT-SERVICE/payment/doPayment
+#  order-service:
+#    endpoints:
+#      endpoint:
+#        uri: http://ORDER-SERVICE/order/bookOrder
+#
+#  security:
+#    oauth2:
+#      client:
+#        provider:
+#          keycloak:
+#            token-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/token
+#            authorization-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/auth
+#            userinfo-uri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/userinfo
+#            user-name-attribute: preferred_username
+
+#eureka:
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#  instance:
+#    hostname: localhost

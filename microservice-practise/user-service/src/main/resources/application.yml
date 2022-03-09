@@ -1,0 +1,70 @@
+server:
+  port: 9193
+
+spring:
+  datasource:
+#    url: jdbc:mysql://localhost:3306/micro?serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/micro
+    username: root
+    password: 87swanson@
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+  application:
+    name: USER-SERVICE
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuerUri: http://localhost:8080/auth/realms/Alphabet
+            userNameAttribute: preferred_username
+            tokenUri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/token
+            authorizationUri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/auth
+            userInfoUri: http://localhost:8080/auth/realms/Alphabet/protocol/openid-connect/userinfo
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/auth/realms/Alphabet
+
+#  autoconfigure:
+#    exclude: com.acme.security.SecurityConfig
+
+keycloak:
+  realm: Alphabet
+  auth-server-url: http://localhost:8080/auth
+  resource: springboot-keytest
+  public-client: true
+  principal-attribute: preferred_username
+  security-constraints[0]:
+    authRoles[0]: user
+    securityCollections[0]:
+      patterns[0]: /user/*
+
+#  security-constraints[1]:
+#    authRoles[0]: admin
+#    securityCollections[0]:
+#      patterns[0]: /user/*
+
+
+#    securityCollections:
+#      patterns: /home
+
+#  security-constraints:
+#    - securityCollections:
+#        - patterns: /user/*
+#    - authRoles: user
+#keycloak:
+#  auth-server-url: http://localhost:8180/auth
+#  realm: SpringBootKeycloak
+#  resource: login-app
+#  public-client: true
+#  principal-attribute: preferred_username
+#  security-constraints[0]:
+#    authRoles[0]: user
+#    securityCollections[0]:
+#      patterns[0]: /customers/*
+#  bearer-only: true
